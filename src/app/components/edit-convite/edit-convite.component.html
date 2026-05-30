@@ -1,0 +1,365 @@
+@if (draft.slug) {
+<div class="edit-layout">
+
+    <!-- ══ PAINEL ESQUERDO — FORMULÁRIO ══ -->
+    <div class="form-panel">
+
+        <!-- Header -->
+        <div class="form-header">
+            <div class="flex items-center gap-3">
+                <button (click)="goAdmin()" class="back-btn">←</button>
+                <div>
+                    <h1 class="form-title font-script">Editar Convite</h1>
+                    <p class="form-subtitle">{{ slug }}</p>
+                </div>
+            </div>
+            <div class="flex gap-2 items-center flex-wrap justify-end">
+                @if (saved) { <span class="saved-badge">✓ Salvo</span> }
+                <button (click)="save()" [disabled]="saving" class="save-btn">
+                    {{ saving ? 'Salvando…' : 'Salvar' }}
+                </button>
+                <button (click)="logout()" class="logout-btn">Sair</button>
+            </div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="tabs">
+            <button (click)="activeTab = 'info'"   [class.tab-active]="activeTab === 'info'"   class="tab">Evento</button>
+            <button (click)="activeTab = 'visual'" [class.tab-active]="activeTab === 'visual'" class="tab">Visual</button>
+            <button (click)="activeTab = 'secoes'" [class.tab-active]="activeTab === 'secoes'" class="tab">Seções</button>
+            <button (click)="activeTab = 'links'"  [class.tab-active]="activeTab === 'links'"  class="tab">Links</button>
+        </div>
+
+        <!-- ─── ABA: EVENTO ─── -->
+        @if (activeTab === 'info') {
+        <div class="form-section">
+            <div class="field-group">
+                <label class="field-label">Tipo de Evento</label>
+                <select [(ngModel)]="draft.tipo" (ngModelChange)="onTipoChange()" class="field-input">
+                    @for (t of eventTypes; track t) {
+                        <option [value]="t">{{ eventTypeService.getConfig(t).label }}</option>
+                    }
+                </select>
+            </div>
+            <div class="field-group">
+                <label class="field-label">Nome Principal</label>
+                <input [(ngModel)]="draft.noivo" placeholder="Ex: João, Maria, Empresa..." class="field-input" />
+            </div>
+            <div class="field-group">
+                <label class="field-label">Nome Secundário <span style="font-weight:400;opacity:0.6">(opcional)</span></label>
+                <input [(ngModel)]="draft.noiva" placeholder="Ex: segundo nome, parceiro(a)..." class="field-input" />
+            </div>
+            <div class="field-group">
+                <label class="field-label">Data e Hora</label>
+                <input [(ngModel)]="draft.data_casamento" type="datetime-local" class="field-input" />
+            </div>
+            <div class="field-group">
+                <label class="field-label">Nome do Local</label>
+                <input [(ngModel)]="draft.local_nome" placeholder="Ex: Espaço Jardins" class="field-input" />
+            </div>
+            <div class="field-group">
+                <label class="field-label">Endereço</label>
+                <input [(ngModel)]="draft.local_endereco" placeholder="Rua, número, cidade" class="field-input" />
+            </div>
+            <div class="field-group">
+                <label class="field-label">WhatsApp <span style="font-weight:400;opacity:0.6">(opcional)</span></label>
+                <input [(ngModel)]="draft.whatsapp_noivo" placeholder="5511999998888" type="tel" class="field-input" />
+            </div>
+            <div class="field-group">
+                <label class="field-label">WhatsApp Secundário <span style="font-weight:400;opacity:0.6">(opcional)</span></label>
+                <input [(ngModel)]="draft.whatsapp_noiva" placeholder="5511999997777" type="tel" class="field-input" />
+            </div>
+            <div class="field-group">
+                <label class="field-label">Senha Admin</label>
+                <input [(ngModel)]="draft.admin_senha" type="password" placeholder="Senha de acesso" class="field-input" />
+            </div>
+        </div>
+        }
+
+        <!-- ─── ABA: VISUAL ─── -->
+        @if (activeTab === 'visual') {
+        <div class="form-section">
+
+            <!-- Temas de Cores -->
+            <div>
+                <p class="section-label">Tema de Cores</p>
+                <div class="themes-grid">
+                    @for (theme of colorThemes; track theme.key) {
+                        @if (theme.key !== 'custom') {
+                            <button (click)="applyTheme(theme)"
+                                class="theme-chip"
+                                [class.theme-active]="activeThemeKey === theme.key"
+                                [title]="theme.label">
+                                <span class="theme-dot" [style.background]="theme.cor_primaria"></span>
+                                <span class="theme-dot" [style.background]="theme.cor_acento"></span>
+                                <span class="theme-name">{{ theme.label }}</span>
+                            </button>
+                        }
+                    }
+                </div>
+            </div>
+
+            <!-- Cores personalizadas -->
+            <div class="field-row">
+                <div class="field-group">
+                    <label class="field-label">Cor Primária</label>
+                    <div class="color-row">
+                        <input [(ngModel)]="draft.cor_primaria" type="color" class="color-swatch" />
+                        <input [(ngModel)]="draft.cor_primaria" placeholder="#4a6e3a" class="field-input flex-1" />
+                    </div>
+                </div>
+                <div class="field-group">
+                    <label class="field-label">Cor de Acento</label>
+                    <div class="color-row">
+                        <input [(ngModel)]="draft.cor_acento" type="color" class="color-swatch" />
+                        <input [(ngModel)]="draft.cor_acento" placeholder="#a08040" class="field-input flex-1" />
+                    </div>
+                </div>
+            </div>
+
+            <!-- Fundo -->
+            <div>
+                <p class="section-label">Fundo do Convite</p>
+                <div class="bg-grid">
+                    @for (bg of backgrounds; track bg.key) {
+                        <button (click)="selectBackground(bg.key)"
+                            class="bg-chip"
+                            [class.bg-active]="draft.fundo_tipo === bg.key"
+                            [style.background]="bg.css"
+                            [title]="bg.label">
+                            @if (bg.dark) {
+                                <span class="bg-label-dark">{{ bg.label }}</span>
+                            } @else {
+                                <span class="bg-label">{{ bg.label }}</span>
+                            }
+                        </button>
+                    }
+                </div>
+            </div>
+
+            <!-- Layout -->
+            <div>
+                <p class="section-label">Layout do Convite</p>
+                <div class="themes-grid">
+                    <button (click)="draft.layout = 'classico'"
+                        class="theme-chip" [class.theme-active]="(draft.layout ?? 'classico') === 'classico'" title="Clássico">
+                        <span style="font-size:1.1rem">🎩</span>
+                        <span class="theme-name">Clássico</span>
+                    </button>
+                    <button (click)="draft.layout = 'infantil'"
+                        class="theme-chip" [class.theme-active]="draft.layout === 'infantil'" title="Infantil">
+                        <span style="font-size:1.1rem">🦋</span>
+                        <span class="theme-name">Infantil</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Entrada -->
+            <div>
+                <p class="section-label">Tela de Entrada</p>
+                <div class="themes-grid">
+                    <button (click)="draft.entrada_tipo = 'carta'"
+                        class="theme-chip" [class.theme-active]="(draft.entrada_tipo ?? 'carta') === 'carta'" title="Envelope / Carta">
+                        <span style="font-size:1.1rem">✉️</span>
+                        <span class="theme-name">Carta</span>
+                    </button>
+                    <button (click)="draft.entrada_tipo = 'presente'"
+                        class="theme-chip" [class.theme-active]="draft.entrada_tipo === 'presente'" title="Caixa de Presente">
+                        <span style="font-size:1.1rem">🎁</span>
+                        <span class="theme-name">Presente</span>
+                    </button>
+                    <button (click)="draft.entrada_tipo = 'direto'"
+                        class="theme-chip" [class.theme-active]="draft.entrada_tipo === 'direto'" title="Sem tela de entrada">
+                        <span style="font-size:1.1rem">⚡</span>
+                        <span class="theme-name">Direto</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Imagens -->
+            <div>
+                <p class="section-label">Imagens</p>
+                @if (uploadError) { <p class="error-msg">{{ uploadError }}</p> }
+                <div class="images-grid">
+                    @for (img of imageFields; track img.field) {
+                        <div class="img-card">
+                            <p class="img-label">{{ img.label }}</p>
+                            <div class="img-preview-box">
+                                @if (imageUrl(img.field)) {
+                                    <img [src]="imageUrl(img.field)" [alt]="img.label" class="img-preview" />
+                                } @else {
+                                    <span class="img-empty">sem imagem</span>
+                                }
+                                @if (uploadingField === img.field) {
+                                    <div class="img-overlay">enviando…</div>
+                                }
+                            </div>
+                            <label class="upload-btn">
+                                Alterar
+                                <input type="file" accept="image/*" class="hidden"
+                                    (change)="uploadImage($event, img.field)"
+                                    [disabled]="uploadingField !== null" />
+                            </label>
+                        </div>
+                    }
+                </div>
+            </div>
+
+        </div>
+        }
+
+        <!-- ─── ABA: SEÇÕES ─── -->
+        @if (activeTab === 'secoes') {
+        <div class="form-section">
+            <p class="section-desc">
+                Ative, desative e reordene as seções do convite com as setas ↑↓.
+                Seções com <span class="tipo-badge">tipo</span> dependem do tipo de evento.
+            </p>
+
+            <div class="toggles-list">
+
+                @for (secao of secoes; track secao.id; let i = $index) {
+                <div class="secao-bloco">
+                    <div class="toggle-row">
+                        <!-- Setas de reordenação -->
+                        <div class="move-btns">
+                            <button class="move-btn" (click)="moveUp(i)" [disabled]="i === 0" title="Mover para cima">↑</button>
+                            <button class="move-btn" (click)="moveDown(i)" [disabled]="i === secoes.length - 1" title="Mover para baixo">↓</button>
+                        </div>
+
+                        <!-- Info da seção -->
+                        <div class="toggle-info">
+                            @if (isCustom(secao.id)) {
+                                <input [(ngModel)]="secao.titulo"
+                                    (ngModelChange)="syncSecoesToDraft()"
+                                    class="field-input toggle-label-input"
+                                    placeholder="Nome da seção" />
+                            } @else {
+                                <span class="toggle-label">
+                                    {{ getBuiltinDef(secao.id)?.label }}
+                                    @if (getBuiltinDef(secao.id)?.tipoBadge) {
+                                        <span class="tipo-badge">tipo</span>
+                                    }
+                                </span>
+                                <span class="toggle-desc">{{ getBuiltinDef(secao.id)?.desc }}</span>
+                            }
+                        </div>
+
+                        <!-- Toggle + Remover (custom) -->
+                        <div class="secao-actions">
+                            @if (isCustom(secao.id)) {
+                                <button class="delete-secao-btn" (click)="removerSecao(i)" title="Remover seção">✕</button>
+                            }
+                            <label class="switch">
+                                <input type="checkbox" [checked]="secao.ativo" (change)="toggleSecao(i)" />
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Conteúdo expandível quando ativo -->
+                    @if (secao.ativo) {
+                        @if (secao.id === 'observacao') {
+                        <div class="secao-conteudo">
+                            <label class="field-label">Texto da observação</label>
+                            <textarea [(ngModel)]="draft.observacao_texto"
+                                (ngModelChange)="syncSecoesToDraft()"
+                                class="field-input field-textarea"
+                                rows="4"
+                                placeholder="Escreva a observação que aparecerá no convite..."></textarea>
+                        </div>
+                        }
+                        @if (secao.id === 'dicas_presentes') {
+                        <div class="secao-conteudo">
+                            <label class="field-label">Dicas de presentes <span style="font-weight:400;opacity:0.6">(uma por linha)</span></label>
+                            <textarea [(ngModel)]="draft.dicas_presentes_texto"
+                                (ngModelChange)="syncSecoesToDraft()"
+                                class="field-input field-textarea"
+                                rows="5"
+                                placeholder="Livros&#10;Roupas tamanho 2&#10;Brinquedos educativos"></textarea>
+                        </div>
+                        }
+                        @if (secao.id === 'fotos') {
+                        <div class="secao-conteudo">
+                            <label class="field-label">URLs das fotos <span style="font-weight:400;opacity:0.6">(uma por linha, até 12)</span></label>
+                            <textarea [(ngModel)]="draft.fotos_galeria"
+                                (ngModelChange)="syncSecoesToDraft()"
+                                class="field-input field-textarea"
+                                rows="5"
+                                placeholder="https://exemplo.com/foto1.jpg&#10;https://exemplo.com/foto2.jpg"></textarea>
+                        </div>
+                        }
+                        @if (isCustom(secao.id)) {
+                        <div class="secao-conteudo">
+                            <label class="field-label">Conteúdo da seção</label>
+                            <textarea [(ngModel)]="secao.conteudo"
+                                (ngModelChange)="syncSecoesToDraft()"
+                                class="field-input field-textarea"
+                                rows="4"
+                                placeholder="Texto que aparecerá nesta seção..."></textarea>
+                        </div>
+                        }
+                    }
+                </div>
+                }
+
+            </div>
+
+            <button (click)="adicionarSecaoCustom()" class="add-secao-btn">
+                + Adicionar Seção Personalizada
+            </button>
+        </div>
+        }
+
+        <!-- ─── ABA: LINKS ─── -->
+        @if (activeTab === 'links') {
+        <div class="form-section">
+            <div class="field-group">
+                <label class="field-label">URL do Mapa (embed)</label>
+                <input [(ngModel)]="draft.local_map_embed_url" placeholder="https://maps.google.com/maps?..." class="field-input" />
+                <p class="field-hint">Cole o link de incorporação do Google Maps (iframe src)</p>
+            </div>
+            <div class="field-group">
+                <label class="field-label">Link do Mapa (direto)</label>
+                <input [(ngModel)]="draft.local_map_link" placeholder="https://maps.app.goo.gl/..." class="field-input" />
+            </div>
+            <div class="field-group">
+                <label class="field-label">Código PIX</label>
+                <textarea [(ngModel)]="draft.pix_codigo" placeholder="Cole o código PIX aqui" class="field-input field-textarea"></textarea>
+            </div>
+            <div class="field-group">
+                <label class="field-label">ID da Música no Spotify</label>
+                <input [(ngModel)]="draft.spotify_track_id" placeholder="30GMS5o33olHdkpdhQT09c" class="field-input" />
+                <p class="field-hint">Parte final da URL da track no Spotify</p>
+            </div>
+            <div class="field-group">
+                <label class="field-label">Instagram</label>
+                <input [(ngModel)]="draft.instagram" placeholder="@perfil" class="field-input" />
+            </div>
+        </div>
+        }
+
+        <!-- Rodapé -->
+        <div class="form-footer">
+            @if (saved) { <span class="saved-badge">✓ Alterações salvas</span> }
+            <button (click)="save()" [disabled]="saving" class="save-btn save-btn-full">
+                {{ saving ? 'Salvando…' : 'Salvar alterações' }}
+            </button>
+        </div>
+
+    </div>
+
+    <!-- ══ PAINEL DIREITO — PREVIEW ══ -->
+    <div class="preview-panel">
+        <p class="preview-label">Prévia ao Vivo</p>
+        <div class="phone-frame">
+            <div class="phone-notch"></div>
+            <div class="phone-screen">
+                <app-invite-preview [cfg]="draftAsCfg" [eventTypeCfg]="eventTypeCfg" />
+            </div>
+        </div>
+        <p class="preview-hint">Scroll dentro do celular para ver tudo</p>
+    </div>
+
+</div>
+}

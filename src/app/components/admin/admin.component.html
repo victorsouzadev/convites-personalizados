@@ -1,0 +1,166 @@
+@if (cfg) {
+<div class="min-h-screen bg-[#f5f2ea] px-4 py-8">
+    <div class="max-w-2xl mx-auto">
+
+        <!-- Header -->
+        <div class="flex items-center justify-between mb-8">
+            <div>
+                <h1 class="font-script text-[#2d4a2a]" style="font-size:2.5rem;">{{ cfg.noivo }} &amp; {{ cfg.noiva }}</h1>
+                <p class="text-[9px] tracking-[0.4em] uppercase text-[#5a7848]">painel admin</p>
+            </div>
+            <button (click)="logout()" class="text-[9px] tracking-[0.3em] uppercase text-[#a08040] border border-[#a08040] px-4 py-2 rounded-full hover:bg-[#a08040] hover:text-white transition-all">
+                Sair
+            </button>
+        </div>
+
+        <!-- Stats -->
+        <div class="grid grid-cols-3 gap-3 mb-6">
+            <div class="bg-white rounded-2xl p-4 text-center border border-[#7a9a6a]/30">
+                <span class="block text-2xl font-light text-[#2d4a2a]">{{ counts.total }}</span>
+                <span class="text-[8px] tracking-[0.3em] uppercase text-[#5a7848]">total</span>
+            </div>
+            <div class="bg-white rounded-2xl p-4 text-center border border-[#7a9a6a]/30">
+                <span class="block text-2xl font-light text-green-600">{{ counts.confirmed }}</span>
+                <span class="text-[8px] tracking-[0.3em] uppercase text-[#5a7848]">confirmados</span>
+            </div>
+            <div class="bg-white rounded-2xl p-4 text-center border border-[#7a9a6a]/30">
+                <span class="block text-2xl font-light text-[#2d4a2a]">{{ counts.opened }}</span>
+                <span class="text-[8px] tracking-[0.3em] uppercase text-[#5a7848]">abriram</span>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-3 gap-3 mb-8">
+            <div class="bg-white/70 rounded-xl p-3 text-center border border-[#7a9a6a]/20">
+                <span class="block text-lg font-light text-[#2d4a2a]">{{ counts.noivo }}</span>
+                <span class="text-[8px] tracking-[0.25em] uppercase text-[#5a7848]">lado noivo</span>
+            </div>
+            <div class="bg-white/70 rounded-xl p-3 text-center border border-[#7a9a6a]/20">
+                <span class="block text-lg font-light text-[#2d4a2a]">{{ counts.noiva }}</span>
+                <span class="text-[8px] tracking-[0.25em] uppercase text-[#5a7848]">lado noiva</span>
+            </div>
+            <div class="bg-white/70 rounded-xl p-3 text-center border border-red-200">
+                <span class="block text-lg font-light text-red-400">{{ counts.declined }}</span>
+                <span class="text-[8px] tracking-[0.25em] uppercase text-[#5a7848]">recusaram</span>
+            </div>
+        </div>
+
+        <!-- Imagens do evento -->
+        <div class="bg-white rounded-2xl p-6 border border-[#7a9a6a]/30 mb-6">
+            <h2 class="text-[10px] tracking-[0.4em] uppercase text-[#5a7848] mb-4">Imagens do Evento</h2>
+
+            @if (uploadError) {
+                <p class="text-red-500 text-xs mb-3">{{ uploadError }}</p>
+            }
+
+            <div class="grid grid-cols-2 gap-4">
+                @for (img of [
+                    { field: 'foto_capa',     label: 'Foto de Capa' },
+                    { field: 'foto_envelope', label: 'Foto do Envelope' },
+                    { field: 'foto_share',    label: 'Foto para Compartilhar' },
+                    { field: 'foto_brasao',   label: 'Brasão / Logo' }
+                ]; track img.field) {
+                    <div class="flex flex-col gap-2">
+                        <p class="text-[9px] tracking-[0.3em] uppercase text-[#5a7848]">{{ img.label }}</p>
+                        <div class="relative w-full aspect-square rounded-xl overflow-hidden border border-[#7a9a6a]/30 bg-[#f5f2ea]">
+                            @if (imageUrl($any(img.field))) {
+                                <img [src]="imageUrl($any(img.field))" [alt]="img.label"
+                                    class="w-full h-full object-cover" />
+                            } @else {
+                                <div class="w-full h-full flex items-center justify-center text-[#7a9a6a]/50 text-xs">sem imagem</div>
+                            }
+                            @if (uploadingField === img.field) {
+                                <div class="absolute inset-0 bg-white/70 flex items-center justify-center">
+                                    <span class="text-[9px] tracking-widest uppercase text-[#4a6e3a]">enviando…</span>
+                                </div>
+                            }
+                        </div>
+                        <label class="cursor-pointer text-center py-2 text-[9px] tracking-[0.3em] uppercase border border-[#7a9a6a]/40 rounded-lg text-[#5a7848] hover:bg-[#f5f2ea] transition-all">
+                            Alterar
+                            <input type="file" accept="image/*" class="hidden"
+                                (change)="uploadImage($event, $any(img.field))"
+                                [disabled]="uploadingField !== null" />
+                        </label>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- Adicionar convidado -->
+        <div class="bg-white rounded-2xl p-6 border border-[#7a9a6a]/30 mb-6">
+            <h2 class="text-[10px] tracking-[0.4em] uppercase text-[#5a7848] mb-4">Adicionar Convidado</h2>
+            <div class="flex flex-col gap-3">
+                <input [(ngModel)]="newName" placeholder="Nome completo"
+                    class="border border-[#7a9a6a]/40 rounded-xl px-4 py-3 text-sm text-[#2d4a2a] outline-none focus:border-[#4a6e3a] bg-[#fdfcf8]" />
+                <input [(ngModel)]="newWhatsapp" placeholder="WhatsApp (ex: 5511999998888)" type="tel"
+                    class="border border-[#7a9a6a]/40 rounded-xl px-4 py-3 text-sm text-[#2d4a2a] outline-none focus:border-[#4a6e3a] bg-[#fdfcf8]" />
+                <button (click)="addGuest()" [disabled]="saving || !newName.trim() || !newWhatsapp.trim()"
+                    class="py-3 rounded-xl text-[10px] tracking-[0.3em] uppercase text-white transition-all"
+                    style="background-color: #4a6e3a;">
+                    {{ saving ? 'Salvando…' : 'Adicionar' }}
+                </button>
+            </div>
+        </div>
+
+        <!-- Lista de convidados -->
+        <div class="flex flex-col gap-3 mb-6">
+            @for (guest of guests; track guest.id) {
+                <div class="bg-white rounded-2xl p-4 border border-[#7a9a6a]/20">
+                    <div class="flex items-start justify-between gap-2 mb-3">
+                        <div>
+                            <p class="text-sm font-medium text-[#2d4a2a]">{{ guest.name }}</p>
+                            <p class="text-[9px] text-[#5a7848] tracking-wider">
+                                {{ guest.side === 'noivo' ? cfg.noivo : cfg.noiva }} ·
+                                {{ guest.open_count ? guest.open_count + 'x abriu' : 'não abriu' }}
+                            </p>
+                        </div>
+                        <div class="flex gap-2">
+                            <button (click)="sendInvite(guest)"
+                                class="text-[8px] tracking-[0.2em] uppercase px-3 py-1.5 rounded-full border border-[#4a6e3a] text-[#4a6e3a] hover:bg-[#4a6e3a] hover:text-white transition-all">
+                                Enviar
+                            </button>
+                            <button (click)="deleteGuest(guest)"
+                                class="text-[8px] tracking-[0.2em] uppercase px-3 py-1.5 rounded-full border border-red-300 text-red-400 hover:bg-red-400 hover:text-white transition-all">
+                                ✕
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="flex gap-2 flex-wrap">
+                        @for (s of statusOptions; track s.value) {
+                            <button (click)="updateStatus(guest, s.value)"
+                                class="text-[8px] tracking-[0.2em] uppercase px-3 py-1 rounded-full transition-all border"
+                                [style.background]="guest.status === s.value ? '#4a6e3a' : ''"
+                                [style.color]="guest.status === s.value ? 'white' : '#5a7848'"
+                                [style.border-color]="guest.status === s.value ? '#4a6e3a' : 'rgba(122,154,106,0.3)'">
+                                {{ s.label }}
+                            </button>
+                        }
+                    </div>
+
+                    @if (guest.id) {
+                        <p class="text-[8px] text-[#9ab090] mt-2 break-all">
+                            {{ BASE_URL }}/{{ slug }}/entrada?id={{ guest.id }}
+                        </p>
+                    }
+                </div>
+            }
+        </div>
+
+        <!-- Ações -->
+        <div class="flex flex-col items-center gap-3 mb-4">
+            <a [routerLink]="'/' + slug + '/admin/editar'"
+               class="block w-full text-center py-3 rounded-xl text-[10px] tracking-[0.3em] uppercase border border-[#7a9a6a]/40 text-[#5a7848] hover:bg-[#f5f2ea] transition-all">
+                ✎ &nbsp;Editar Configurações do Convite
+            </a>
+        </div>
+
+        <div class="flex justify-center mb-8">
+            <button (click)="clearAllStats()" [disabled]="clearingStats"
+                class="text-[9px] tracking-[0.3em] uppercase text-red-400 border border-red-200 px-6 py-2 rounded-full hover:bg-red-50 transition-all">
+                {{ clearingStats ? 'Zerando…' : 'Zerar estatísticas' }}
+            </button>
+        </div>
+
+    </div>
+</div>
+}
