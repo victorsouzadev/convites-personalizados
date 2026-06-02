@@ -1,6 +1,7 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, ActivatedRoute } from '@angular/router';
+import { Title } from '@angular/platform-browser';
 import { GuestService } from '../../services/guest.service';
 import { ConviteConfigService } from '../../services/convite-config.service';
 import { BACKGROUND_PRESETS } from '../../models/themes.model';
@@ -26,6 +27,7 @@ export class EnvelopeComponent implements OnInit {
         private guestService: GuestService,
         private cdr: ChangeDetectorRef,
         public configService: ConviteConfigService,
+        private titleService: Title,
     ) {}
 
     async ngOnInit() {
@@ -47,6 +49,12 @@ export class EnvelopeComponent implements OnInit {
         }
 
         const cfg = this.configService.current();
+        if (cfg) {
+            const noivo = cfg.noivo?.trim() ?? '';
+            const noiva = cfg.noiva?.trim() ?? '';
+            const nomes = noivo && noiva ? `${noivo} & ${noiva}` : noivo || noiva;
+            this.titleService.setTitle(nomes ? `Convite de ${nomes}` : 'Convite');
+        }
         if (cfg?.entrada_tipo === 'direto') {
             this.router.navigate([`/${this.slug}/convite`], { queryParams });
         }

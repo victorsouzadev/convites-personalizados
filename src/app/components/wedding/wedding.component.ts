@@ -1,7 +1,7 @@
 import { Component, OnInit, OnDestroy, ChangeDetectorRef, NgZone, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+import { DomSanitizer, SafeResourceUrl, Title } from '@angular/platform-browser';
 import { ActivatedRoute } from '@angular/router';
 import { GuestService } from '../../services/guest.service';
 import { ConviteConfigService, ConviteConfig, SecaoItem } from '../../services/convite-config.service';
@@ -76,6 +76,7 @@ export class WeddingComponent implements OnInit, OnDestroy {
         private guestService: GuestService,
         public configService: ConviteConfigService,
         private eventTypeService: EventTypeService,
+        private titleService: Title,
     ) {}
 
     async ngOnInit() {
@@ -85,6 +86,9 @@ export class WeddingComponent implements OnInit, OnDestroy {
         if (!this.cfg) return;
 
         this.eventTypeCfg = this.eventTypeService.getConfig(this.cfg.tipo || 'casamento');
+
+        const nomes = this.eventNomes;
+        this.titleService.setTitle(nomes ? `Convite de ${nomes}` : 'Convite');
 
         this.weddingDate = new Date(this.cfg.data_casamento);
         this.safeMapUrl = this.sanitizer.bypassSecurityTrustResourceUrl(this.cfg.local_map_embed_url);
