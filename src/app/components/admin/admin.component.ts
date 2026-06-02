@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { Subscription } from 'rxjs';
-import { GuestService, Guest, GuestStatus, GuestSide } from '../../services/guest.service';
+import { GuestService, Guest, GuestStatus } from '../../services/guest.service';
 import { ConviteConfigService, ConviteConfig } from '../../services/convite-config.service';
 import { AuthService } from '../../services/auth.service';
 import { EventTypeService } from '../../services/event-type.service';
@@ -25,7 +25,6 @@ export class AdminComponent implements OnInit, OnDestroy {
 
     newName = '';
     newWhatsapp = '';
-    newSide: GuestSide = 'noivo';
     saving = false;
     clearingStats = false;
     uploadingField: ImageField | null = null;
@@ -85,10 +84,9 @@ export class AdminComponent implements OnInit, OnDestroy {
         if (!name || !whatsapp) return;
         this.saving = true;
         try {
-            await this.guestService.addGuest(this.slug, name, whatsapp, this.newSide);
+            await this.guestService.addGuest(this.slug, name, whatsapp, 'noivo');
             this.newName = '';
             this.newWhatsapp = '';
-            this.newSide = 'noivo';
         } finally {
             this.saving = false;
             this.cdr.markForCheck();
@@ -203,15 +201,20 @@ export class AdminComponent implements OnInit, OnDestroy {
 
     get counts() {
         return {
-            total: this.guests.length,
-            noivo: this.guests.filter(g => g.side === 'noivo').length,
-            noiva: this.guests.filter(g => g.side === 'noiva').length,
+            total:     this.guests.length,
             confirmed: this.guests.filter(g => g.status === 'confirmed').length,
-            declined: this.guests.filter(g => g.status === 'declined').length,
-            opened: this.guests.filter(g => g.open_count).length,
-            totalOpens: this.guests.reduce((s, g) => s + (g.open_count ?? 0), 0),
-            clickedConfirm: this.guests.filter(g => g.confirm_clicks).length,
-            clickedGifts: this.guests.filter(g => g.gifts_clicks).length,
+            declined:  this.guests.filter(g => g.status === 'declined').length,
+            sent:      this.guests.filter(g => g.status === 'sent').length,
+            pending:   this.guests.filter(g => g.status === 'pending').length,
+            opened:    this.guests.filter(g => g.open_count).length,
         };
+    }
+
+    statusColor(status: GuestStatus): string {
+        return { confirmed: '#16a34a', declined: '#dc2626', sent: '#d97706', pending: '#64748b' }[status] ?? '#64748b';
+    }
+
+    statusBg(status: GuestStatus): string {
+        return { confirmed: '#f0fdf4', declined: '#fef2f2', sent: '#fffbeb', pending: '#f8fafc' }[status] ?? '#f8fafc';
     }
 }
