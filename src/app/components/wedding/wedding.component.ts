@@ -4,10 +4,15 @@ import { FormsModule } from '@angular/forms';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { ActivatedRoute } from '@angular/router';
 import { GuestService } from '../../services/guest.service';
-import { ConviteConfigService, ConviteConfig } from '../../services/convite-config.service';
+import { ConviteConfigService, ConviteConfig, SecaoItem } from '../../services/convite-config.service';
 import { EventTypeService, } from '../../services/event-type.service';
 import { EventTypeConfig } from '../../models/event-type.model';
 import { BACKGROUND_PRESETS } from '../../models/themes.model';
+
+const DEFAULT_SECOES_ORDER = [
+    'fotos', 'mapa', 'traje', 'traje_pastel', 'pix',
+    'dicas_presentes', 'confirmacao', 'recusar', 'observacao', 'spotify', 'manual',
+];
 
 @Component({
     selector: 'app-wedding',
@@ -230,12 +235,49 @@ export class WeddingComponent implements OnInit, OnDestroy {
         };
     }
 
-    get showMapa(): boolean        { return this.cfg?.show_mapa !== false; }
-    get showTraje(): boolean       { return !!(this.eventTypeCfg?.showTraje && this.cfg?.show_traje !== false); }
-    get showPix(): boolean         { return !!(this.eventTypeCfg?.showPix && this.cfg?.show_pix !== false); }
-    get showConfirmacao(): boolean { return this.cfg?.show_confirmacao !== false; }
-    get showSpotify(): boolean     { return !!(this.cfg?.spotify_track_id && this.cfg?.show_spotify !== false); }
-    get showManual(): boolean      { return this.cfg?.show_manual !== false; }
+    get secoesOrdenadas(): SecaoItem[] {
+        const raw = this.cfg?.secoes_config;
+        if (raw) {
+            try { return (JSON.parse(raw) as SecaoItem[]).filter(s => s.ativo); } catch { /* fallback */ }
+        }
+        return DEFAULT_SECOES_ORDER
+            .map(id => ({ id, ativo: this.defaultAtivo(id) }))
+            .filter(s => s.ativo);
+    }
+
+    private defaultAtivo(id: string): boolean {
+        switch (id) {
+            case 'mapa':        return this.cfg?.show_mapa        !== false;
+            case 'traje':       return !!(this.eventTypeCfg?.showTraje && this.cfg?.show_traje !== false);
+            case 'pix':         return !!(this.eventTypeCfg?.showPix   && this.cfg?.show_pix   !== false);
+            case 'confirmacao': return this.cfg?.show_confirmacao !== false;
+            case 'spotify':     return !!(this.cfg?.spotify_track_id   && this.cfg?.show_spotify !== false);
+            case 'manual':      return this.cfg?.show_manual      !== false;
+            default:            return false;
+        }
+    }
+
+    get galeriaFotos(): string[] {
+        const raw = this.cfg?.fotos_galeria ?? '';
+        if (raw.trim().startsWith('[')) {
+            try { return JSON.parse(raw); } catch { /* fallback */ }
+        }
+        return raw.split('\n').map((l: string) => l.trim()).filter(Boolean).slice(0, 12);
+    }
+
+    get dicasPresentes(): string[] {
+        return (this.cfg?.dicas_presentes_texto ?? '')
+            .split('\n').map((l: string) => l.trim()).filter(Boolean);
+    }
+
+    get observacaoTexto(): string { return this.cfg?.observacao_texto ?? ''; }
+
+    get showMapa(): boolean        { return this.secoesOrdenadas.some(s => s.id === 'mapa'); }
+    get showTraje(): boolean       { return this.secoesOrdenadas.some(s => s.id === 'traje') && !!(this.eventTypeCfg?.showTraje); }
+    get showPix(): boolean         { return this.secoesOrdenadas.some(s => s.id === 'pix') && !!(this.eventTypeCfg?.showPix); }
+    get showConfirmacao(): boolean { return this.secoesOrdenadas.some(s => s.id === 'confirmacao'); }
+    get showSpotify(): boolean     { return this.secoesOrdenadas.some(s => s.id === 'spotify') && !!(this.cfg?.spotify_track_id); }
+    get showManual(): boolean      { return this.secoesOrdenadas.some(s => s.id === 'manual'); }
 
     getDisplayDate(dateStr: string): string {
         if (!dateStr) return '';

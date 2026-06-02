@@ -81,10 +81,8 @@
                 </svg>
                 <div class="flex-1 h-px" style="background-color: color-mix(in srgb, var(--cor-p) 30%, transparent)"></div>
             </div>
-
             <h2 class="font-script mb-1" [style.color]="cfg.cor_primaria" style="font-size: 2.8rem;">Contagem Regressiva</h2>
             <p class="text-[9px] tracking-[0.4em] uppercase mb-10" style="color: color-mix(in srgb, var(--cor-p) 80%, #000)">{{ eventTypeCfg?.countdownSubtitle }}</p>
-
             <div class="grid grid-cols-4 gap-3">
                 @for (unit of [
                     { val: timeLeft.days,    label: 'dias' },
@@ -101,7 +99,7 @@
         </div>
     </section>
 
-    <!-- ── LOCALIZAÇÃO · PRESENTES · CONFIRMAÇÃO ── -->
+    <!-- ── SEÇÕES DINÂMICAS ── -->
     <section class="py-16 px-6 pb-28">
         <div class="max-w-xl mx-auto">
 
@@ -111,160 +109,249 @@
                 <div class="flex-1 h-px" style="background-color: color-mix(in srgb, var(--cor-p) 30%, transparent)"></div>
             </div>
 
-            <!-- Localização -->
-            @if (showMapa) {
-                <h2 class="font-script text-center mb-1" [style.color]="cfg.cor_primaria" style="font-size: 2.8rem;">Como Chegar</h2>
-                <p class="text-[9px] tracking-[0.4em] uppercase text-center mb-6" style="color: color-mix(in srgb, var(--cor-p) 80%, #000)">
-                    {{ cfg.local_nome }} · {{ cfg.local_endereco }}
-                </p>
-                <div class="rounded-2xl overflow-hidden shadow-md mb-4" style="border: 1px solid color-mix(in srgb, var(--cor-p) 30%, transparent)">
-                    @if (cfg.local_map_embed_url) {
-                        <iframe [src]="safeMapUrl" width="100%" height="240" style="border:0;" allowfullscreen loading="lazy"></iframe>
-                    } @else {
-                        <div class="map-placeholder" style="height:240px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; background: color-mix(in srgb, var(--cor-p) 5%, white)">
-                            <span style="font-size:2rem">📍</span>
-                            <p style="font-size:0.7rem; letter-spacing:0.2em; text-transform:uppercase; color: color-mix(in srgb, var(--cor-p) 60%, #000)">{{ cfg.local_endereco || 'Endereço não informado' }}</p>
+            @for (secao of secoesOrdenadas; track secao.id; let last = $last) {
+            <div>
+                @switch (secao.id) {
+
+                    <!-- Fotos -->
+                    @case ('fotos') {
+                    @if (galeriaFotos.length > 0) {
+                    <div class="mb-10">
+                        <h2 class="font-script text-center mb-1" [style.color]="cfg.cor_primaria" style="font-size: 2.8rem;">Fotos</h2>
+                        <p class="text-[9px] tracking-[0.4em] uppercase text-center mb-6" style="color: color-mix(in srgb, var(--cor-p) 80%, #000)">momentos especiais</p>
+                        <div class="grid grid-cols-3 gap-2">
+                            @for (url of galeriaFotos; track url) {
+                                <div class="aspect-square rounded-xl overflow-hidden" style="border: 1px solid color-mix(in srgb, var(--cor-p) 25%, transparent)">
+                                    <img [src]="url" alt="Foto" class="w-full h-full object-cover" />
+                                </div>
+                            }
                         </div>
-                    }
-                </div>
-                <div class="text-center mb-10">
-                    <button (click)="openMap()"
-                        class="px-10 py-3 text-[10px] tracking-[0.35em] uppercase rounded-full transition-all duration-300 hover:text-white"
-                        [style.borderColor]="cfg.cor_primaria" [style.color]="cfg.cor_primaria"
-                        style="border-width: 1px; border-style: solid;"
-                        onmouseover="this.style.backgroundColor=this.style.borderColor; this.style.color='#fff'"
-                        onmouseout="this.style.backgroundColor=''; this.style.color=this.style.borderColor">
-                        Abrir no Maps
-                    </button>
-                </div>
-                <div class="flex items-center gap-4 mb-10">
-                    <div class="flex-1 h-px" style="background-color: color-mix(in srgb, var(--cor-p) 20%, transparent)"></div>
-                    <span style="color: var(--cor-p)" class="text-xs">✦</span>
-                    <div class="flex-1 h-px" style="background-color: color-mix(in srgb, var(--cor-p) 20%, transparent)"></div>
-                </div>
-            }
-
-            <!-- Traje -->
-            @if (showTraje) {
-                <div class="mb-10">
-                    <h2 class="font-script text-center mb-1" [style.color]="cfg.cor_primaria" style="font-size: 2.8rem;">Traje</h2>
-                    <p class="text-[9px] tracking-[0.4em] uppercase text-center" style="color: color-mix(in srgb, var(--cor-p) 80%, #000)">traje social</p>
-                </div>
-                <div class="flex items-center gap-4 mb-10">
-                    <div class="flex-1 h-px" style="background-color: color-mix(in srgb, var(--cor-p) 20%, transparent)"></div>
-                    <span style="color: var(--cor-p)" class="text-xs">✦</span>
-                    <div class="flex-1 h-px" style="background-color: color-mix(in srgb, var(--cor-p) 20%, transparent)"></div>
-                </div>
-            }
-
-            <!-- Presentes / PIX -->
-            @if (showPix) {
-                <div>
-                    <h2 class="font-script text-center mb-1" [style.color]="cfg.cor_primaria" style="font-size: 2.8rem;">Presentes</h2>
-                    <p class="text-[9px] tracking-[0.4em] uppercase text-center mb-6" style="color: color-mix(in srgb, var(--cor-p) 80%, #000)">sua presença é o maior presente</p>
-                    <div class="flex flex-col gap-3 max-w-xs mx-auto mb-3">
-                        <button (click)="copyPix(); trackGiftsClick()"
-                            class="flex items-center justify-center gap-3 w-full py-4 rounded-full text-[10px] tracking-[0.3em] uppercase border transition-all duration-300"
-                            [style.borderColor]="cfg.cor_primaria"
-                            [style.color]="pixCopied ? '#fff' : cfg.cor_primaria"
-                            [style.backgroundColor]="pixCopied ? cfg.cor_primaria : ''">
-                            {{ pixCopied ? 'Código Copiado ✓' : 'Copiar Código Pix' }}
-                        </button>
-                        @if (pixCopied) {
-                            <p class="text-center text-[9px] tracking-[0.2em] uppercase leading-relaxed" style="color: var(--cor-p)">
-                                Abra seu banco e cole o código para fazer o Pix
-                            </p>
-                        }
                     </div>
-                </div>
-                <div class="flex items-center gap-4 mb-10 mt-8">
-                    <div class="flex-1 h-px" style="background-color: color-mix(in srgb, var(--cor-p) 20%, transparent)"></div>
-                    <span style="color: var(--cor-p)" class="text-xs">✦</span>
-                    <div class="flex-1 h-px" style="background-color: color-mix(in srgb, var(--cor-p) 20%, transparent)"></div>
-                </div>
-            }
+                    }
+                    }
 
-            <!-- Confirmação -->
-            @if (showConfirmacao) {
-                <div class="flex flex-col gap-4 max-w-xs mx-auto">
-                    <button (click)="addToGoogleCalendar()"
-                        class="flex items-center justify-center gap-3 w-full py-4 rounded-full text-[10px] tracking-[0.3em] uppercase transition-all duration-300 hover:text-white"
-                        [style.borderColor]="cfg.cor_primaria" [style.color]="cfg.cor_primaria"
-                        style="border-width: 1px; border-style: solid;"
-                        onmouseover="this.style.backgroundColor=this.style.borderColor; this.style.color='#fff'"
-                        onmouseout="this.style.backgroundColor=''; this.style.color=this.style.borderColor">
-                        Adicionar no Google Agenda
-                    </button>
-                    @if (eventTypeCfg?.showWhatsAppConfirm) {
-                        @if (confirmed) {
-                            <div class="w-full py-4 text-center text-[10px] tracking-[0.3em] uppercase" [style.color]="cfg.cor_primaria">
-                                Presença confirmada ✓
-                            </div>
-                        } @else if (showNameForm) {
-                            <div class="flex flex-col gap-2">
-                                <input class="confirm-input" type="text" placeholder="Seu nome completo"
-                                    [(ngModel)]="pendingName" name="pendingName" />
-                                <button (click)="submitConfirm(pendingName)"
-                                    [disabled]="confirming || !pendingName.trim()"
-                                    class="w-full py-4 rounded-full text-[10px] tracking-[0.3em] uppercase text-white shadow-md transition-all duration-300"
-                                    [style.background-color]="cfg.cor_primaria">
-                                    {{ confirming ? 'Salvando…' : 'Confirmar via WhatsApp' }}
-                                </button>
-                            </div>
-                        } @else {
-                            <button (click)="confirmPresence()"
-                                class="w-full py-4 rounded-full text-[10px] tracking-[0.3em] uppercase text-white shadow-md transition-all duration-300 hover:scale-[1.03]"
-                                [style.background-color]="cfg.cor_primaria">
-                                Confirmar Presença
+                    <!-- Mapa -->
+                    @case ('mapa') {
+                    <div class="mb-10">
+                        <h2 class="font-script text-center mb-1" [style.color]="cfg.cor_primaria" style="font-size: 2.8rem;">Como Chegar</h2>
+                        <p class="text-[9px] tracking-[0.4em] uppercase text-center mb-6" style="color: color-mix(in srgb, var(--cor-p) 80%, #000)">
+                            {{ cfg.local_nome }} · {{ cfg.local_endereco }}
+                        </p>
+                        <div class="rounded-2xl overflow-hidden shadow-md mb-4" style="border: 1px solid color-mix(in srgb, var(--cor-p) 30%, transparent)">
+                            @if (cfg.local_map_embed_url) {
+                                <iframe [src]="safeMapUrl" width="100%" height="240" style="border:0;" allowfullscreen loading="lazy"></iframe>
+                            } @else {
+                                <div style="height:240px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; background: color-mix(in srgb, var(--cor-p) 5%, white)">
+                                    <span style="font-size:2rem">📍</span>
+                                    <p style="font-size:0.7rem; letter-spacing:0.2em; text-transform:uppercase; color: color-mix(in srgb, var(--cor-p) 60%, #000)">{{ cfg.local_endereco || 'Endereço não informado' }}</p>
+                                </div>
+                            }
+                        </div>
+                        <div class="text-center mb-10">
+                            <button (click)="openMap()"
+                                class="px-10 py-3 text-[10px] tracking-[0.35em] uppercase rounded-full transition-all duration-300"
+                                [style.borderColor]="cfg.cor_primaria" [style.color]="cfg.cor_primaria"
+                                style="border-width: 1px; border-style: solid;"
+                                onmouseover="this.style.backgroundColor=this.style.borderColor; this.style.color='#fff'"
+                                onmouseout="this.style.backgroundColor=''; this.style.color=this.style.borderColor">
+                                Abrir no Maps
                             </button>
-                        }
-                    }
-                </div>
-            }
-
-        </div>
-    </section>
-
-    <!-- ── MÚSICA ── -->
-    @if (showSpotify) {
-    <section class="px-6 py-16">
-        <div class="max-w-xl mx-auto">
-            <iframe [src]="safeSpotifyUrl"
-                style="border-radius:12px" width="100%" height="152"
-                frameBorder="0" allowfullscreen=""
-                allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-                loading="lazy">
-            </iframe>
-        </div>
-    </section>
-    }
-
-    <!-- ── MANUAL DOS CONVIDADOS ── -->
-    @if (showManual) {
-    <section class="py-16 px-6">
-        <div class="max-w-xl mx-auto">
-            <div class="flex items-center gap-4 mb-10">
-                <div class="flex-1 h-px" style="background-color: color-mix(in srgb, var(--cor-p) 30%, transparent)"></div>
-                <svg width="20" height="20" viewBox="0 0 24 24" [attr.fill]="cfg.cor_primaria" fill-opacity="0.7">
-                    <path d="M12 2l1.8 7.2L21 7l-5.5 5.5L21 18l-7.2-1.8L12 23l-1.8-7.2L3 17l5.5-5.5L3 6l7.2 1.8Z"/>
-                </svg>
-                <div class="flex-1 h-px" style="background-color: color-mix(in srgb, var(--cor-p) 30%, transparent)"></div>
-            </div>
-
-            <h2 class="font-script text-center mb-1" [style.color]="cfg.cor_primaria" style="font-size: 2.8rem;">{{ eventTypeCfg?.manualTitle }}</h2>
-            <p class="text-[9px] tracking-[0.4em] uppercase text-center mb-10" style="color: color-mix(in srgb, var(--cor-p) 80%, #000)">{{ eventTypeCfg?.manualSubtitle }}</p>
-
-            <div class="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                @for (item of manualItems; track item.label) {
-                    <div class="flex flex-col items-center gap-3 bg-white/60 rounded-2xl p-5" style="border: 1px solid color-mix(in srgb, var(--cor-p) 30%, transparent)">
-                        <img [src]="'assets/manual/' + item.file" [alt]="item.label" class="w-16 h-16 object-contain">
-                        <p class="text-[9px] tracking-[0.2em] uppercase text-center font-semibold leading-relaxed" style="color: var(--cor-p)">{{ item.label }}</p>
+                        </div>
                     </div>
+                    }
+
+                    <!-- Traje -->
+                    @case ('traje') {
+                    @if (eventTypeCfg?.showTraje) {
+                    <div class="mb-10">
+                        <h2 class="font-script text-center mb-1" [style.color]="cfg.cor_primaria" style="font-size: 2.8rem;">Traje</h2>
+                        <p class="text-[9px] tracking-[0.4em] uppercase text-center" style="color: color-mix(in srgb, var(--cor-p) 80%, #000)">traje social</p>
+                    </div>
+                    }
+                    }
+
+                    <!-- Traje Pastel -->
+                    @case ('traje_pastel') {
+                    <div class="mb-10">
+                        <h2 class="font-script text-center mb-1" [style.color]="cfg.cor_primaria" style="font-size: 2.8rem;">Traje</h2>
+                        <div class="bg-white/50 rounded-2xl p-5 text-center" style="border: 1px solid color-mix(in srgb, var(--cor-p) 30%, transparent)">
+                            <p class="text-[10px] tracking-[0.3em] uppercase mb-2" style="color: var(--cor-p)">🌸 Sugestão de traje</p>
+                            <p class="text-[11px] tracking-[0.2em] uppercase font-medium" style="color: color-mix(in srgb, var(--cor-p) 80%, #000)">Venha de roupas em tons pastéis</p>
+                            <div class="flex justify-center gap-2 mt-4">
+                                @for (cor of ['#f8d7da','#fce4ec','#e8f5e9','#e3f2fd','#fff9c4','#f3e5f5']; track cor) {
+                                    <div class="w-6 h-6 rounded-full border border-white shadow-sm" [style.background]="cor"></div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                    }
+
+                    <!-- PIX / Presentes -->
+                    @case ('pix') {
+                    @if (eventTypeCfg?.showPix) {
+                    <div class="mb-10">
+                        <h2 class="font-script text-center mb-1" [style.color]="cfg.cor_primaria" style="font-size: 2.8rem;">Presentes</h2>
+                        <p class="text-[9px] tracking-[0.4em] uppercase text-center mb-6" style="color: color-mix(in srgb, var(--cor-p) 80%, #000)">sua presença é o maior presente</p>
+                        <div class="flex flex-col gap-3 max-w-xs mx-auto mb-3">
+                            <button (click)="copyPix(); trackGiftsClick()"
+                                class="flex items-center justify-center gap-3 w-full py-4 rounded-full text-[10px] tracking-[0.3em] uppercase border transition-all duration-300"
+                                [style.borderColor]="cfg.cor_primaria"
+                                [style.color]="pixCopied ? '#fff' : cfg.cor_primaria"
+                                [style.backgroundColor]="pixCopied ? cfg.cor_primaria : ''">
+                                {{ pixCopied ? 'Código Copiado ✓' : 'Copiar Código Pix' }}
+                            </button>
+                            @if (pixCopied) {
+                                <p class="text-center text-[9px] tracking-[0.2em] uppercase leading-relaxed" style="color: var(--cor-p)">
+                                    Abra seu banco e cole o código para fazer o Pix
+                                </p>
+                            }
+                        </div>
+                    </div>
+                    }
+                    }
+
+                    <!-- Dicas de Presentes -->
+                    @case ('dicas_presentes') {
+                    @if (dicasPresentes.length > 0) {
+                    <div class="mb-10">
+                        <h2 class="font-script text-center mb-1" [style.color]="cfg.cor_primaria" style="font-size: 2.8rem;">Dicas de Presentes</h2>
+                        <ul class="mt-4 space-y-2">
+                            @for (dica of dicasPresentes; track dica) {
+                                <li class="flex items-center gap-3 bg-white/50 rounded-xl px-4 py-3"
+                                    style="border: 1px solid color-mix(in srgb, var(--cor-p) 25%, transparent)">
+                                    <span style="color: var(--cor-a)">🎁</span>
+                                    <span class="text-[11px] tracking-[0.15em]" style="color: color-mix(in srgb, var(--cor-p) 80%, #000)">{{ dica }}</span>
+                                </li>
+                            }
+                        </ul>
+                    </div>
+                    }
+                    }
+
+                    <!-- Confirmação -->
+                    @case ('confirmacao') {
+                    <div class="flex flex-col gap-4 max-w-xs mx-auto mb-10">
+                        <button (click)="addToGoogleCalendar()"
+                            class="flex items-center justify-center gap-3 w-full py-4 rounded-full text-[10px] tracking-[0.3em] uppercase transition-all duration-300"
+                            [style.borderColor]="cfg.cor_primaria" [style.color]="cfg.cor_primaria"
+                            style="border-width: 1px; border-style: solid;"
+                            onmouseover="this.style.backgroundColor=this.style.borderColor; this.style.color='#fff'"
+                            onmouseout="this.style.backgroundColor=''; this.style.color=this.style.borderColor">
+                            Adicionar no Google Agenda
+                        </button>
+                        @if (eventTypeCfg?.showWhatsAppConfirm) {
+                            @if (confirmed) {
+                                <div class="w-full py-4 text-center text-[10px] tracking-[0.3em] uppercase" [style.color]="cfg.cor_primaria">
+                                    Presença confirmada ✓
+                                </div>
+                            } @else if (showNameForm) {
+                                <div class="flex flex-col gap-2">
+                                    <input class="confirm-input" type="text" placeholder="Seu nome completo"
+                                        [(ngModel)]="pendingName" name="pendingName" />
+                                    <button (click)="submitConfirm(pendingName)"
+                                        [disabled]="confirming || !pendingName.trim()"
+                                        class="w-full py-4 rounded-full text-[10px] tracking-[0.3em] uppercase text-white shadow-md"
+                                        [style.background-color]="cfg.cor_primaria">
+                                        {{ confirming ? 'Salvando…' : 'Confirmar via WhatsApp' }}
+                                    </button>
+                                </div>
+                            } @else {
+                                <button (click)="confirmPresence()"
+                                    class="w-full py-4 rounded-full text-[10px] tracking-[0.3em] uppercase text-white shadow-md transition-all duration-300 hover:scale-[1.03]"
+                                    [style.background-color]="cfg.cor_primaria">
+                                    Confirmar Presença
+                                </button>
+                            }
+                        }
+                    </div>
+                    }
+
+                    <!-- Recusar -->
+                    @case ('recusar') {
+                    <div class="text-center mb-10">
+                        <button
+                            class="px-10 py-3 text-[10px] tracking-[0.35em] uppercase rounded-full transition-all duration-300"
+                            style="border: 1px solid rgba(180,60,60,0.4); color: rgba(180,60,60,0.7);">
+                            Não poderei comparecer
+                        </button>
+                    </div>
+                    }
+
+                    <!-- Observação -->
+                    @case ('observacao') {
+                    @if (observacaoTexto) {
+                    <div class="mb-10">
+                        <h2 class="font-script text-center mb-4" [style.color]="cfg.cor_primaria" style="font-size: 2.8rem;">Observação</h2>
+                        <div class="bg-white/50 rounded-2xl p-5" style="border: 1px solid color-mix(in srgb, var(--cor-p) 30%, transparent)">
+                            <p class="text-[11px] leading-relaxed tracking-[0.15em]" style="color: color-mix(in srgb, var(--cor-p) 80%, #000); white-space: pre-line">{{ observacaoTexto }}</p>
+                        </div>
+                    </div>
+                    }
+                    }
+
+                    <!-- Spotify -->
+                    @case ('spotify') {
+                    @if (cfg.spotify_track_id) {
+                    <div class="mb-10">
+                        <iframe [src]="safeSpotifyUrl"
+                            style="border-radius:12px" width="100%" height="152"
+                            frameBorder="0" allowfullscreen=""
+                            allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                            loading="lazy">
+                        </iframe>
+                    </div>
+                    }
+                    }
+
+                    <!-- Manual -->
+                    @case ('manual') {
+                    <div class="mb-10">
+                        <div class="flex items-center gap-4 mb-10">
+                            <div class="flex-1 h-px" style="background-color: color-mix(in srgb, var(--cor-p) 30%, transparent)"></div>
+                            <svg width="20" height="20" viewBox="0 0 24 24" [attr.fill]="cfg.cor_primaria" fill-opacity="0.7">
+                                <path d="M12 2l1.8 7.2L21 7l-5.5 5.5L21 18l-7.2-1.8L12 23l-1.8-7.2L3 17l5.5-5.5L3 6l7.2 1.8Z"/>
+                            </svg>
+                            <div class="flex-1 h-px" style="background-color: color-mix(in srgb, var(--cor-p) 30%, transparent)"></div>
+                        </div>
+                        <h2 class="font-script text-center mb-1" [style.color]="cfg.cor_primaria" style="font-size: 2.8rem;">{{ eventTypeCfg?.manualTitle }}</h2>
+                        <p class="text-[9px] tracking-[0.4em] uppercase text-center mb-10" style="color: color-mix(in srgb, var(--cor-p) 80%, #000)">{{ eventTypeCfg?.manualSubtitle }}</p>
+                        <div class="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                            @for (item of manualItems; track item.label) {
+                                <div class="flex flex-col items-center gap-3 bg-white/60 rounded-2xl p-5" style="border: 1px solid color-mix(in srgb, var(--cor-p) 30%, transparent)">
+                                    <img [src]="'assets/manual/' + item.file" [alt]="item.label" class="w-16 h-16 object-contain">
+                                    <p class="text-[9px] tracking-[0.2em] uppercase text-center font-semibold leading-relaxed" style="color: var(--cor-p)">{{ item.label }}</p>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                    }
+
+                    <!-- Seção customizada -->
+                    @default {
+                    @if (secao.id.startsWith('custom_') && secao.conteudo) {
+                    <div class="mb-10">
+                        <h2 class="font-script text-center mb-4" [style.color]="cfg.cor_primaria" style="font-size: 2.8rem;">{{ secao.titulo }}</h2>
+                        <div class="bg-white/50 rounded-2xl p-5" style="border: 1px solid color-mix(in srgb, var(--cor-p) 30%, transparent)">
+                            <p class="text-[11px] leading-relaxed tracking-[0.15em]" style="color: color-mix(in srgb, var(--cor-p) 80%, #000); white-space: pre-line">{{ secao.conteudo }}</p>
+                        </div>
+                    </div>
+                    }
+                    }
+
+                }
+
+                @if (!last) {
+                <div class="flex items-center gap-4 mb-10">
+                    <div class="flex-1 h-px" style="background-color: color-mix(in srgb, var(--cor-p) 20%, transparent)"></div>
+                    <span style="color: var(--cor-p)" class="text-xs">✦</span>
+                    <div class="flex-1 h-px" style="background-color: color-mix(in srgb, var(--cor-p) 20%, transparent)"></div>
+                </div>
                 }
             </div>
+            }
+
         </div>
     </section>
-    }
 
 </div>
 }
@@ -442,7 +529,7 @@
         </div>
     </section>
 
-    <!-- ── INFORMAÇÕES INFANTIL ── -->
+    <!-- ── SEÇÕES DINÂMICAS INFANTIL ── -->
     <section class="px-5 pb-10">
         <div class="max-w-xl mx-auto">
 
@@ -462,127 +549,209 @@
                 <div class="flex-1 h-px" style="background-color: color-mix(in srgb, var(--cor-p) 25%, transparent)"></div>
             </div>
 
-            <!-- Mapa -->
-            @if (showMapa) {
-            <div class="kid-section-card mb-6">
-                <h3 class="font-script text-center mb-3" [style.color]="cfg.cor_primaria" style="font-size:2.2rem">Como Chegar 📍</h3>
-                <p class="text-[9px] tracking-[0.3em] uppercase text-center mb-4" style="color: color-mix(in srgb, var(--cor-p) 70%, #000)">
-                    {{ cfg.local_nome }} · {{ cfg.local_endereco }}
-                </p>
-                <div class="rounded-2xl overflow-hidden shadow-sm mb-3" style="border: 2px solid color-mix(in srgb, var(--cor-p) 30%, transparent)">
-                    @if (cfg.local_map_embed_url) {
-                        <iframe [src]="safeMapUrl" width="100%" height="220" style="border:0;" allowfullscreen loading="lazy"></iframe>
-                    } @else {
-                        <div style="height:220px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; background: color-mix(in srgb, var(--cor-p) 5%, white)">
-                            <span style="font-size:2rem">📍</span>
-                            <p style="font-size:0.7rem; letter-spacing:0.2em; text-transform:uppercase; color: color-mix(in srgb, var(--cor-p) 60%, #000)">{{ cfg.local_endereco || 'Endereço não informado' }}</p>
-                        </div>
-                    }
-                </div>
-                <div class="text-center">
-                    <button (click)="openMap()" class="kid-btn-outline" [style.borderColor]="cfg.cor_primaria" [style.color]="cfg.cor_primaria">
-                        🗺️ Abrir no Maps
-                    </button>
-                </div>
-            </div>
-            }
+            @for (secao of secoesOrdenadas; track secao.id) {
+            @switch (secao.id) {
 
-            <!-- Traje -->
-            @if (showTraje) {
-            <div class="kid-section-card mb-6">
-                <h3 class="font-script text-center mb-2" [style.color]="cfg.cor_primaria" style="font-size:2.2rem">Traje 👗</h3>
-                <p class="text-[9px] tracking-[0.3em] uppercase text-center" style="color: color-mix(in srgb, var(--cor-p) 70%, #000)">traje social</p>
-            </div>
-            }
-
-            <!-- PIX -->
-            @if (showPix) {
-            <div class="kid-section-card mb-6">
-                <h3 class="font-script text-center mb-2" [style.color]="cfg.cor_primaria" style="font-size:2.2rem">Presentinho 🎁</h3>
-                <p class="text-[9px] tracking-[0.3em] uppercase text-center mb-4" style="color: color-mix(in srgb, var(--cor-p) 70%, #000)">
-                    sua presença já é o maior presente
-                </p>
-                <button (click)="copyPix(); trackGiftsClick()"
-                    class="kid-btn-filled w-full"
-                    [style.background]="pixCopied ? cfg.cor_acento : cfg.cor_primaria">
-                    {{ pixCopied ? '✓ Copiado!' : '💝 Copiar Código Pix' }}
-                </button>
-            </div>
-            }
-
-            <!-- Confirmação -->
-            @if (showConfirmacao) {
-            <div class="kid-section-card mb-6">
-                <h3 class="font-script text-center mb-4" [style.color]="cfg.cor_primaria" style="font-size:2.2rem">Vai Vir? 🎉</h3>
-                <div class="flex flex-col gap-3">
-                    <button (click)="addToGoogleCalendar()" class="kid-btn-outline" [style.borderColor]="cfg.cor_primaria" [style.color]="cfg.cor_primaria">
-                        📅 Adicionar na Agenda
-                    </button>
-                    @if (eventTypeCfg?.showWhatsAppConfirm) {
-                        @if (confirmed) {
-                            <div class="text-center text-[10px] tracking-[0.25em] uppercase py-3" [style.color]="cfg.cor_primaria">
-                                🎊 Presença confirmada!
+                <!-- Fotos infantil -->
+                @case ('fotos') {
+                @if (galeriaFotos.length > 0) {
+                <div class="kid-section-card mb-6">
+                    <h3 class="font-script text-center mb-3" [style.color]="cfg.cor_primaria" style="font-size:2.2rem">Fotos 📸</h3>
+                    <div class="grid grid-cols-3 gap-2">
+                        @for (url of galeriaFotos; track url) {
+                            <div class="aspect-square rounded-xl overflow-hidden" style="border: 2px solid color-mix(in srgb, var(--cor-p) 25%, transparent)">
+                                <img [src]="url" alt="Foto" class="w-full h-full object-cover" />
                             </div>
-                        } @else if (showNameForm) {
-                            <div class="flex flex-col gap-2">
-                                <input class="confirm-input" type="text" placeholder="Seu nome completo"
-                                    [(ngModel)]="pendingName" name="pendingName" />
-                                <button (click)="submitConfirm(pendingName)"
-                                    [disabled]="confirming || !pendingName.trim()"
-                                    class="kid-btn-filled" [style.background]="cfg.cor_primaria">
-                                    {{ confirming ? 'Salvando…' : '🎊 Confirmar via WhatsApp' }}
-                                </button>
-                            </div>
-                        } @else {
-                            <button (click)="confirmPresence()"
-                                class="kid-btn-filled" [style.background]="cfg.cor_primaria">
-                                🎊 Confirmar Presença
-                            </button>
                         }
-                    }
+                    </div>
                 </div>
-            </div>
+                }
+                }
+
+                <!-- Mapa infantil -->
+                @case ('mapa') {
+                <div class="kid-section-card mb-6">
+                    <h3 class="font-script text-center mb-3" [style.color]="cfg.cor_primaria" style="font-size:2.2rem">Como Chegar 📍</h3>
+                    <p class="text-[9px] tracking-[0.3em] uppercase text-center mb-4" style="color: color-mix(in srgb, var(--cor-p) 70%, #000)">
+                        {{ cfg.local_nome }} · {{ cfg.local_endereco }}
+                    </p>
+                    <div class="rounded-2xl overflow-hidden shadow-sm mb-3" style="border: 2px solid color-mix(in srgb, var(--cor-p) 30%, transparent)">
+                        @if (cfg.local_map_embed_url) {
+                            <iframe [src]="safeMapUrl" width="100%" height="220" style="border:0;" allowfullscreen loading="lazy"></iframe>
+                        } @else {
+                            <div style="height:220px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; background: color-mix(in srgb, var(--cor-p) 5%, white)">
+                                <span style="font-size:2rem">📍</span>
+                                <p style="font-size:0.7rem; letter-spacing:0.2em; text-transform:uppercase; color: color-mix(in srgb, var(--cor-p) 60%, #000)">{{ cfg.local_endereco || 'Endereço não informado' }}</p>
+                            </div>
+                        }
+                    </div>
+                    <div class="text-center">
+                        <button (click)="openMap()" class="kid-btn-outline" [style.borderColor]="cfg.cor_primaria" [style.color]="cfg.cor_primaria">
+                            🗺️ Abrir no Maps
+                        </button>
+                    </div>
+                </div>
+                }
+
+                <!-- Traje infantil -->
+                @case ('traje') {
+                @if (eventTypeCfg?.showTraje) {
+                <div class="kid-section-card mb-6">
+                    <h3 class="font-script text-center mb-2" [style.color]="cfg.cor_primaria" style="font-size:2.2rem">Traje 👗</h3>
+                    <p class="text-[9px] tracking-[0.3em] uppercase text-center" style="color: color-mix(in srgb, var(--cor-p) 70%, #000)">traje social</p>
+                </div>
+                }
+                }
+
+                <!-- Traje Pastel infantil -->
+                @case ('traje_pastel') {
+                <div class="kid-section-card mb-6">
+                    <h3 class="font-script text-center mb-3" [style.color]="cfg.cor_primaria" style="font-size:2.2rem">Traje 🌸</h3>
+                    <p class="text-[9px] tracking-[0.3em] uppercase text-center mb-3" style="color: color-mix(in srgb, var(--cor-p) 70%, #000)">venha de roupas pastéis</p>
+                    <div class="flex justify-center gap-2">
+                        @for (cor of ['#f8d7da','#fce4ec','#e8f5e9','#e3f2fd','#fff9c4','#f3e5f5']; track cor) {
+                            <div class="w-7 h-7 rounded-full border-2 border-white shadow-sm" [style.background]="cor"></div>
+                        }
+                    </div>
+                </div>
+                }
+
+                <!-- PIX infantil -->
+                @case ('pix') {
+                @if (eventTypeCfg?.showPix) {
+                <div class="kid-section-card mb-6">
+                    <h3 class="font-script text-center mb-2" [style.color]="cfg.cor_primaria" style="font-size:2.2rem">Presentinho 🎁</h3>
+                    <p class="text-[9px] tracking-[0.3em] uppercase text-center mb-4" style="color: color-mix(in srgb, var(--cor-p) 70%, #000)">
+                        sua presença já é o maior presente
+                    </p>
+                    <button (click)="copyPix(); trackGiftsClick()"
+                        class="kid-btn-filled w-full"
+                        [style.background]="pixCopied ? cfg.cor_acento : cfg.cor_primaria">
+                        {{ pixCopied ? '✓ Copiado!' : '💝 Copiar Código Pix' }}
+                    </button>
+                </div>
+                }
+                }
+
+                <!-- Dicas de Presentes infantil -->
+                @case ('dicas_presentes') {
+                @if (dicasPresentes.length > 0) {
+                <div class="kid-section-card mb-6">
+                    <h3 class="font-script text-center mb-3" [style.color]="cfg.cor_primaria" style="font-size:2.2rem">Dicas de Presentes 🎀</h3>
+                    <ul class="space-y-2">
+                        @for (dica of dicasPresentes; track dica) {
+                            <li class="flex items-center gap-2 text-[11px]" style="color: color-mix(in srgb, var(--cor-p) 80%, #000)">
+                                <span>🎁</span><span>{{ dica }}</span>
+                            </li>
+                        }
+                    </ul>
+                </div>
+                }
+                }
+
+                <!-- Confirmação infantil -->
+                @case ('confirmacao') {
+                <div class="kid-section-card mb-6">
+                    <h3 class="font-script text-center mb-4" [style.color]="cfg.cor_primaria" style="font-size:2.2rem">Vai Vir? 🎉</h3>
+                    <div class="flex flex-col gap-3">
+                        <button (click)="addToGoogleCalendar()" class="kid-btn-outline" [style.borderColor]="cfg.cor_primaria" [style.color]="cfg.cor_primaria">
+                            📅 Adicionar na Agenda
+                        </button>
+                        @if (eventTypeCfg?.showWhatsAppConfirm) {
+                            @if (confirmed) {
+                                <div class="text-center text-[10px] tracking-[0.25em] uppercase py-3" [style.color]="cfg.cor_primaria">
+                                    🎊 Presença confirmada!
+                                </div>
+                            } @else if (showNameForm) {
+                                <div class="flex flex-col gap-2">
+                                    <input class="confirm-input" type="text" placeholder="Seu nome completo"
+                                        [(ngModel)]="pendingName" name="pendingName" />
+                                    <button (click)="submitConfirm(pendingName)"
+                                        [disabled]="confirming || !pendingName.trim()"
+                                        class="kid-btn-filled" [style.background]="cfg.cor_primaria">
+                                        {{ confirming ? 'Salvando…' : '🎊 Confirmar via WhatsApp' }}
+                                    </button>
+                                </div>
+                            } @else {
+                                <button (click)="confirmPresence()"
+                                    class="kid-btn-filled" [style.background]="cfg.cor_primaria">
+                                    🎊 Confirmar Presença
+                                </button>
+                            }
+                        }
+                    </div>
+                </div>
+                }
+
+                <!-- Recusar infantil -->
+                @case ('recusar') {
+                <div class="kid-section-card mb-6 text-center">
+                    <h3 class="font-script text-center mb-3" [style.color]="cfg.cor_primaria" style="font-size:2.2rem">Não vai poder vir? 😢</h3>
+                    <button class="kid-btn-outline" style="border-color: rgba(180,60,60,0.4); color: rgba(180,60,60,0.7)">
+                        😔 Não poderei comparecer
+                    </button>
+                </div>
+                }
+
+                <!-- Observação infantil -->
+                @case ('observacao') {
+                @if (observacaoTexto) {
+                <div class="kid-section-card mb-6">
+                    <h3 class="font-script text-center mb-3" [style.color]="cfg.cor_primaria" style="font-size:2.2rem">Observação 📝</h3>
+                    <p class="text-[11px] leading-relaxed" style="color: color-mix(in srgb, var(--cor-p) 80%, #000); white-space: pre-line">{{ observacaoTexto }}</p>
+                </div>
+                }
+                }
+
+                <!-- Spotify infantil -->
+                @case ('spotify') {
+                @if (cfg.spotify_track_id) {
+                <div class="mb-6">
+                    <iframe [src]="safeSpotifyUrl"
+                        style="border-radius:16px" width="100%" height="152"
+                        frameBorder="0" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                        loading="lazy">
+                    </iframe>
+                </div>
+                }
+                }
+
+                <!-- Manual infantil -->
+                @case ('manual') {
+                <div class="mb-6">
+                    <div class="flex items-center gap-3 mb-6">
+                        <div class="flex-1 h-px" style="background-color: color-mix(in srgb, var(--cor-p) 25%, transparent)"></div>
+                        <span style="font-size:1.2rem">🌸</span>
+                        <div class="flex-1 h-px" style="background-color: color-mix(in srgb, var(--cor-p) 25%, transparent)"></div>
+                    </div>
+                    <h2 class="font-script text-center mb-1" [style.color]="cfg.cor_primaria" style="font-size: 2.2rem;">{{ eventTypeCfg?.manualTitle }}</h2>
+                    <p class="text-[9px] tracking-[0.4em] uppercase text-center mb-8" style="color: color-mix(in srgb, var(--cor-p) 70%, #000)">{{ eventTypeCfg?.manualSubtitle }}</p>
+                    <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                        @for (item of manualItems; track item.label) {
+                            <div class="flex flex-col items-center gap-2 bg-white/70 rounded-3xl p-4"
+                                 style="border: 2px solid color-mix(in srgb, var(--cor-p) 25%, transparent)">
+                                <img [src]="'assets/manual/' + item.file" [alt]="item.label" class="w-14 h-14 object-contain">
+                                <p class="text-[9px] tracking-[0.15em] uppercase text-center font-semibold leading-relaxed" style="color: var(--cor-p)">{{ item.label }}</p>
+                            </div>
+                        }
+                    </div>
+                </div>
+                }
+
+                <!-- Seção customizada infantil -->
+                @default {
+                @if (secao.id.startsWith('custom_') && secao.conteudo) {
+                <div class="kid-section-card mb-6">
+                    <h3 class="font-script text-center mb-3" [style.color]="cfg.cor_primaria" style="font-size:2.2rem">{{ secao.titulo }}</h3>
+                    <p class="text-[11px] leading-relaxed" style="color: color-mix(in srgb, var(--cor-p) 80%, #000); white-space: pre-line">{{ secao.conteudo }}</p>
+                </div>
+                }
+                }
+            }
             }
 
         </div>
     </section>
-
-    <!-- ── MÚSICA INFANTIL ── -->
-    @if (showSpotify) {
-    <section class="px-5 pb-10">
-        <div class="max-w-xl mx-auto">
-            <iframe [src]="safeSpotifyUrl"
-                style="border-radius:16px" width="100%" height="152"
-                frameBorder="0" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-                loading="lazy">
-            </iframe>
-        </div>
-    </section>
-    }
-
-    <!-- ── MANUAL INFANTIL ── -->
-    @if (showManual) {
-    <section class="px-5 pb-16">
-        <div class="max-w-xl mx-auto">
-            <div class="flex items-center gap-3 mb-6">
-                <div class="flex-1 h-px" style="background-color: color-mix(in srgb, var(--cor-p) 25%, transparent)"></div>
-                <span style="font-size:1.2rem">🌸</span>
-                <div class="flex-1 h-px" style="background-color: color-mix(in srgb, var(--cor-p) 25%, transparent)"></div>
-            </div>
-            <h2 class="font-script text-center mb-1" [style.color]="cfg.cor_primaria" style="font-size: 2.2rem;">{{ eventTypeCfg?.manualTitle }}</h2>
-            <p class="text-[9px] tracking-[0.4em] uppercase text-center mb-8" style="color: color-mix(in srgb, var(--cor-p) 70%, #000)">{{ eventTypeCfg?.manualSubtitle }}</p>
-            <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                @for (item of manualItems; track item.label) {
-                    <div class="flex flex-col items-center gap-2 bg-white/70 rounded-3xl p-4"
-                         style="border: 2px solid color-mix(in srgb, var(--cor-p) 25%, transparent)">
-                        <img [src]="'assets/manual/' + item.file" [alt]="item.label" class="w-14 h-14 object-contain">
-                        <p class="text-[9px] tracking-[0.15em] uppercase text-center font-semibold leading-relaxed" style="color: var(--cor-p)">{{ item.label }}</p>
-                    </div>
-                }
-            </div>
-        </div>
-    </section>
-    }
 
     <!-- Rodapé decorativo -->
     <div class="kid-footer-deco" aria-hidden="true">
