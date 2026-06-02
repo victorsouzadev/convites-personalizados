@@ -123,4 +123,11 @@ export class ConviteConfigService {
         if (url.startsWith('http')) return url;
         return `assets/${slug}/${url}`;
     }
+
+    /** Converte link de compartilhamento do Google Drive para URL direta de imagem */
+    static resolvePhotoUrl(url: string): string {
+        const match = url.match(/drive\.google\.com\/file\/d\/([^\/\?]+)/);
+        if (match) return `https://lh3.googleusercontent.com/d/${match[1]}`;
+        return url;
+    }
 }

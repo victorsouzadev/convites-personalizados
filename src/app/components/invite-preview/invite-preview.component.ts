@@ -186,11 +186,13 @@ export class InvitePreviewComponent implements OnChanges, DoCheck, OnDestroy {
     // helpers de conteúdo das novas seções
     get galeriaFotos(): string[] {
         const raw = this.cfg?.fotos_galeria ?? '';
-        // suporta tanto JSON array quanto lista de URLs uma por linha
+        let urls: string[];
         if (raw.trim().startsWith('[')) {
-            try { return JSON.parse(raw); } catch { /* fallback */ }
+            try { urls = JSON.parse(raw); } catch { urls = []; }
+        } else {
+            urls = raw.split('\n').map((l: string) => l.trim()).filter(Boolean).slice(0, 12);
         }
-        return raw.split('\n').map(l => l.trim()).filter(Boolean).slice(0, 12);
+        return urls.map(ConviteConfigService.resolvePhotoUrl);
     }
 
     get dicasPresentes(): string[] {
