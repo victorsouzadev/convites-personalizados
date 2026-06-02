@@ -94,6 +94,17 @@ export class GuestService {
         }
     }
 
+    async declineById(id: string): Promise<void> {
+        await this.sb.client.from(this.table).update({ status: 'declined' }).eq('id', id);
+    }
+
+    async declineByName(slug: string, name: string): Promise<void> {
+        const { data } = await this.sb.client.from(this.table).select('id').eq('slug', slug).ilike('name', name);
+        if (data?.length) {
+            await this.sb.client.from(this.table).update({ status: 'declined' }).eq('id', data[0].id);
+        }
+    }
+
     async trackOpen(id: string): Promise<void> {
         const { data: guest } = await this.sb.client.from(this.table).select('open_count').eq('id', id).single();
         await this.sb.client.from(this.table).update({

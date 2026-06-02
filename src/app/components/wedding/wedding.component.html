@@ -268,12 +268,29 @@
 
                     <!-- Recusar -->
                     @case ('recusar') {
-                    <div class="text-center mb-10">
-                        <button
-                            class="px-10 py-3 text-[10px] tracking-[0.35em] uppercase rounded-full transition-all duration-300"
-                            style="border: 1px solid rgba(180,60,60,0.4); color: rgba(180,60,60,0.7);">
-                            Não poderei comparecer
-                        </button>
+                    <div class="flex flex-col items-center gap-3 max-w-xs mx-auto mb-10">
+                        @if (declined) {
+                            <div class="text-center text-[10px] tracking-[0.25em] uppercase py-3" style="color: rgba(180,60,60,0.8)">
+                                Recusa registrada. Obrigado por avisar.
+                            </div>
+                        } @else if (showDeclineForm) {
+                            <div class="flex flex-col gap-2 w-full">
+                                <input class="confirm-input" type="text" placeholder="Seu nome completo"
+                                    [(ngModel)]="pendingDeclineName" name="pendingDeclineName" />
+                                <button (click)="submitDecline(pendingDeclineName)"
+                                    [disabled]="declining || !pendingDeclineName.trim()"
+                                    class="w-full py-4 rounded-full text-[10px] tracking-[0.3em] uppercase text-white shadow-md transition-all"
+                                    style="background-color: rgba(180,60,60,0.75)">
+                                    {{ declining ? 'Registrando…' : 'Confirmar recusa via WhatsApp' }}
+                                </button>
+                            </div>
+                        } @else {
+                            <button (click)="declinePresence()"
+                                class="px-10 py-3 text-[10px] tracking-[0.35em] uppercase rounded-full transition-all duration-300"
+                                style="border: 1px solid rgba(180,60,60,0.4); color: rgba(180,60,60,0.7);">
+                                Não poderei comparecer
+                            </button>
+                        }
                     </div>
                     }
 
@@ -685,11 +702,30 @@
 
                 <!-- Recusar infantil -->
                 @case ('recusar') {
-                <div class="kid-section-card mb-6 text-center">
+                <div class="kid-section-card mb-6">
                     <h3 class="font-script text-center mb-3" [style.color]="cfg.cor_primaria" style="font-size:2.2rem">Não vai poder vir? 😢</h3>
-                    <button class="kid-btn-outline" style="border-color: rgba(180,60,60,0.4); color: rgba(180,60,60,0.7)">
-                        😔 Não poderei comparecer
-                    </button>
+                    @if (declined) {
+                        <p class="text-center text-[10px] tracking-[0.25em] uppercase py-2" style="color: rgba(180,60,60,0.8)">
+                            Recusa registrada. Obrigado por avisar.
+                        </p>
+                    } @else if (showDeclineForm) {
+                        <div class="flex flex-col gap-2">
+                            <input class="confirm-input" type="text" placeholder="Seu nome completo"
+                                [(ngModel)]="pendingDeclineName" name="pendingDeclineNameKid" />
+                            <button (click)="submitDecline(pendingDeclineName)"
+                                [disabled]="declining || !pendingDeclineName.trim()"
+                                class="kid-btn-filled" style="background: rgba(180,60,60,0.75)">
+                                {{ declining ? 'Registrando…' : '😔 Confirmar recusa via WhatsApp' }}
+                            </button>
+                        </div>
+                    } @else {
+                        <div class="text-center">
+                            <button (click)="declinePresence()" class="kid-btn-outline"
+                                style="border-color: rgba(180,60,60,0.4); color: rgba(180,60,60,0.7)">
+                                😔 Não poderei comparecer
+                            </button>
+                        </div>
+                    }
                 </div>
                 }
 

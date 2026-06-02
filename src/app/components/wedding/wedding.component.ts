@@ -42,6 +42,11 @@ export class WeddingComponent implements OnInit, OnDestroy {
     confirmed = false;
     pixCopied = false;
 
+    showDeclineForm = false;
+    pendingDeclineName = '';
+    declining = false;
+    declined = false;
+
     safeMapUrl: SafeResourceUrl | null = null;
     safeSpotifyUrl: SafeResourceUrl | null = null;
 
@@ -173,6 +178,42 @@ export class WeddingComponent implements OnInit, OnDestroy {
             waWindow?.close();
         } finally {
             this.confirming = false;
+            this.cdr.markForCheck();
+        }
+    }
+
+    declinePresence() {
+        if (this.guestName) {
+            this.submitDecline(this.guestName);
+        } else {
+            this.showDeclineForm = true;
+            this.cdr.markForCheck();
+        }
+    }
+
+    async submitDecline(name: string) {
+        if (!name.trim() || this.declining || !this.cfg) return;
+        this.declining = true;
+        this.cdr.markForCheck();
+
+        const number = this.guestSide === 'noiva' ? this.cfg.whatsapp_noiva : this.cfg.whatsapp_noivo;
+        const msg = `Olá! Sou ${name.trim()} e infelizmente não poderei comparecer ao evento de ${this.eventNomes}. Obrigado pelo convite!`;
+        const waUrl = `https://wa.me/${number}?text=${encodeURIComponent(msg)}`;
+        const waWindow = window.open('', '_blank');
+
+        try {
+            if (this.guestId) {
+                await this.guestService.declineById(this.guestId);
+            } else {
+                await this.guestService.declineByName(this.slug, name.trim());
+            }
+            this.declined = true;
+            this.showDeclineForm = false;
+            if (waWindow) waWindow.location.href = waUrl;
+        } catch {
+            waWindow?.close();
+        } finally {
+            this.declining = false;
             this.cdr.markForCheck();
         }
     }
